@@ -50,7 +50,7 @@
       let showAreaLayer = false;
       let itemId = "6d83a0e1c12b43beba2a0eb745ec552a";
       let daffodilAreasUrl = "https://services.arcgis.com/OLiydejKCZTGhvWg/arcgis/rest/services/DaffodilAreas_Coast/FeatureServer/0";
-      let daffodilUrl =  "./Daffodil_426_te1.glb";
+      let daffodilUrl = "./Daffodil_426_te1.glb";
       let maxDist = 2;
       let maxHeight = 1;
       let startAt = 0;
@@ -111,7 +111,7 @@
       function playAnimation(slides) {
         if (startAt > slides.length) startAt = 0;
         aniSlideCounter = startAt;
-        
+
         console.log("Playing flight on click", slides, view, " | speedFactor:", speedFactor, " | offset (ms):", offset, " | starting at slide ", startAt);
 
         view.on("click", (e) => {
@@ -128,10 +128,7 @@
           console.log("Offset over", offset);
           if (aniSlideCounter <= slides.length) {
 
-            if ((modelLayerStartAt === -1 || modelLayerStartAt <= aniSlideCounter) && !view.map.findLayerById(modelLayer.id)) {
-              view.map.add(modelLayer);
-            }
-            else if ((modelLayerEndAt === aniSlideCounter) && view.map.findLayerById(modelLayer.id)) {
+            if ((modelLayerEndAt === aniSlideCounter) && view.map.findLayerById(modelLayer.id)) {
               view.map.remove(modelLayer);
             }
 
@@ -147,14 +144,6 @@
           }
         });
       }
-
-
-
-
-
-
-
-
 
 
 
@@ -211,6 +200,10 @@
       modelLayer = new GraphicsLayer({
         id: "modelLayer"
       });
+
+      if ((modelLayerStartAt === -1 || modelLayerStartAt <= startAt) && !view.map.findLayerById(modelLayer.id)) {
+        view.map.add(modelLayer);
+      }
 
       let daffodilAreas = new FeatureLayer({
         url: daffodilAreasUrl,
