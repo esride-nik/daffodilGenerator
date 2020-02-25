@@ -4,7 +4,7 @@
 Generated random daffodil patterns within areas defined on an ArcGIS FeatureLayer. Plays a flight from slides defined in an ArcGIS WebScene.
 
 Supports the following URL parameters:
-* showWidgets: boolean. default: false
+* showWidgets: boolean. default: false. Use this parameter to show default widgets and Esri attribution.
 * showAreaLayer: boolean. default: false
 * itemId: string. Points to the [ArcGIS](http://www.arcgis.com) ItemID of a WebScene.
 * daffodilAreasUrl: string. Points to the URL of an ArcGIS FeatureLayer that contains the daffodil areas.
@@ -19,5 +19,7 @@ Supports the following URL parameters:
 * speedFactor: number. default: 0.1. lower is slower.
 * offset: number. default: 0. halt when slide is reached.
 * easing: string. default: "in-out-coast-quadratic". [possible values see "easing" doc](https://developers.arcgis.com/javascript/latest/api-reference/esri-views-SceneView.html#GoToOptions3D)
+
+Disclaimer: Esri attribution and other widgets were removed by default, because this project was used to make videos for the Esri Germany conference #EsriKon 2020.
 
 Based the ArcGIS API for JavaScript Sample [Import glTF 3D Models - 4.14](https://developers.arcgis.com/javascript/latest/sample-code/import-gltf/index.html).
