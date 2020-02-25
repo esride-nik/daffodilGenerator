@@ -1,0 +1,32 @@
+{
+  "name": "daffodilgenerator",
+  "version": "1.0.0",
+  "description": "generates daffodil patterns",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "browser-sync -s -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/esride-nik/daffodilGenerator.git"
+  },
+  "keywords": [
+    "ArcGIS",
+    "JavaScript",
+    "glb",
+    "glTF",
+    "3D",
+    "daffodils"
+  ],
+  "author": "Niklas Köhn",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/esride-nik/daffodilGenerator/issues"
+  },
+  "homepage": "https://github.com/esride-nik/daffodilGenerator#readme",
+  "dependencies": {
+    "browser-sync": "^2.26.7",
+    "npm": "^6.13.7"
+  }
+}
