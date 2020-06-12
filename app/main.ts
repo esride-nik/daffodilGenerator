@@ -85,6 +85,7 @@ class DaffodilGen {
               this.sketch.on("create", (event: any) => {
                 if (event.state === "complete") {
                     this.drawDaffodilsIntoArea(event.graphic.geometry);
+                    this.view.goTo(event.graphic.geometry);
                     sketchLayer.remove(event.graphic);
                 }
               });
@@ -191,17 +192,22 @@ class DaffodilGen {
         }
         if (!this.usePresentation) {
             this.view.when().then((e: any) => {
-                let cam = this.view.camera;
-                cam.position.x = 775332.0137992485;
-                cam.position.y = 6612214.632348182;
-                cam.position.z = 57.69778415095061;
-                cam.heading = 207.988007136939;
-                cam.tilt = 82.21180084335059;
+                // let cam = this.view.camera;
+                // cam.position.x = 775332.0137992485;
+                // cam.position.y = 6612214.632348182;
+                // cam.position.z = 57.69778415095061;
+                // cam.heading = 207.988007136939;
+                // cam.tilt = 82.21180084335059;
+                let cam = {"position":{"spatialReference":{"latestWkid":3857,"wkid":102100},"x":775403.8146573873,"y":6612168.1981127085,"z":57.69778415095061},"heading":207.9885080296481,"tilt":82.21180084335448};
                 this.view.goTo(cam, {
                     animate: false
                 });
             });
         }
+
+        // this.view.watch("extent", (e: any) => {
+        //     console.log(this.view.camera.position.x, this.view.camera.position.y, this.view.camera.position.z, JSON.stringify(this.view.camera));
+        // })
     }
 
     private getUrlParams() {
