@@ -192,7 +192,7 @@ class DaffodilGen {
         this.playAnimation(slides.items);
     }
 
-    private playAnimation(slides) {
+    private playAnimation(slides: any) {
         if (this.startAt > slides.length) this.startAt = 0;
         this.aniSlideCounter = this.startAt;
 
@@ -206,7 +206,7 @@ class DaffodilGen {
 
     private aniNextLocation(slides: any) {
         console.log("Approaching location #" + this.aniSlideCounter, slides[this.aniSlideCounter], slides[this.aniSlideCounter].viewpoint);
-        new Promise((resolve) => {
+        new Promise((resolve: any) => {
             setTimeout(resolve, this.offset);
         }).then(() => {
             console.log("Offset over", this.offset);
