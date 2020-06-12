@@ -56,6 +56,10 @@ define(["require", "exports", "esri/views/SceneView", "esri/WebScene", "esri/Gra
                 });
                 if (this.geocode) {
                     this.searchWidget.search(this.geocode);
+                    this.searchWidget.goToOverride = function (view, goToParams) {
+                        goToParams.options.animate = false;
+                        return view.goTo(goToParams.target, goToParams.options);
+                    };
                 }
                 this.view.ui.add(this.searchWidget, {
                     position: "top-left",
@@ -92,6 +96,15 @@ define(["require", "exports", "esri/views/SceneView", "esri/WebScene", "esri/Gra
             var ext = unGeo.extent;
             var xDist = this.maxDist * this.getRndPercent();
             var yDist = this.maxDist * this.getRndPercent();
+            // assume numbers
+            var assumePointCount = 0;
+            for (var x = ext.xmin; x < ext.xmax; x += xDist) {
+                for (var y = ext.ymin; y < ext.ymax; y += yDist) {
+                    assumePointCount++;
+                    yDist = this.maxDist * this.getRndPercent();
+                }
+                xDist = this.maxDist * this.getRndPercent();
+            }
             var pointCounter = 0;
             var rowCounter = 0;
             for (var x = ext.xmin; x < ext.xmax; x += xDist) {
@@ -130,7 +143,7 @@ define(["require", "exports", "esri/views/SceneView", "esri/WebScene", "esri/Gra
                 rowCounter++;
                 console.log("row ", rowCounter, " pointCounter", pointCounter);
             }
-            console.log("total pointCounter", pointCounter);
+            console.log("total pointCounter", pointCounter, "assumed: ", assumePointCount, "ratio assumed/real: ", assumePointCount / pointCounter);
         };
         DaffodilGen.prototype.initPresentation = function () {
             var _this = this;

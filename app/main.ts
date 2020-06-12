@@ -68,6 +68,10 @@ class DaffodilGen {
               });
               if (this.geocode) {
                   this.searchWidget.search(this.geocode);
+                  this.searchWidget.goToOverride = (view: SceneView, goToParams: any) => {
+                    goToParams.options.animate = false;
+                    return view.goTo(goToParams.target, goToParams.options);
+                  };
               }
               this.view.ui.add(this.searchWidget, {
                 position: "top-left",
@@ -113,6 +117,17 @@ class DaffodilGen {
         let ext = unGeo.extent;
         let xDist = this.maxDist * this.getRndPercent();
         let yDist = this.maxDist * this.getRndPercent();
+
+        // assume numbers
+        let assumePointCount = 0;
+        for (let x = ext.xmin; x < ext.xmax; x += xDist) {
+            for (let y = ext.ymin; y < ext.ymax; y += yDist) {
+                assumePointCount++;
+                yDist = this.maxDist * this.getRndPercent();
+            }
+            xDist = this.maxDist * this.getRndPercent();
+        }
+
         let pointCounter = 0;
         let rowCounter = 0;
         for (let x = ext.xmin; x < ext.xmax; x += xDist) {
@@ -151,7 +166,7 @@ class DaffodilGen {
             rowCounter++;
             console.log("row ", rowCounter, " pointCounter", pointCounter);
         }
-        console.log("total pointCounter", pointCounter);
+        console.log("total pointCounter", pointCounter, "assumed: ", assumePointCount, "ratio assumed/real: ", assumePointCount/pointCounter);
     }
 
     private initPresentation() {
