@@ -5,7 +5,8 @@
   "main": "index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "browser-sync -s -w"
+    "start": "browser-sync -s -w --startPath index.html",
+    "dev": "tsc -w"
   },
   "repository": {
     "type": "git",
@@ -26,7 +27,9 @@
   },
   "homepage": "https://github.com/esride-nik/daffodilGenerator#readme",
   "dependencies": {
+    "@types/arcgis-js-api": "^4.15.0",
     "browser-sync": "^2.26.7",
-    "npm": "^6.13.7"
+    "npm": "^6.14.5",
+    "typescript": "^3.9.5"
   }
 }
