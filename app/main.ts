@@ -35,6 +35,7 @@ class DaffodilGen {
     private usePresentation: boolean;
     searchWidget: Search;
     sketch: any;
+    geocode: any;
 
 
     constructor() {
@@ -65,6 +66,9 @@ class DaffodilGen {
             this.searchWidget = new Search({
                 view: this.view
               });
+              if (this.geocode) {
+                  this.searchWidget.search(this.geocode);
+              }
               this.view.ui.add(this.searchWidget, {
                 position: "top-left",
                 index: 0
@@ -221,6 +225,7 @@ class DaffodilGen {
             })
         });
 
+        if (result.geocode) this.geocode = result.geocode;
         if (result.usePresentation) this.usePresentation = result.usePresentation === "true" || result.usePresentation === "y" || result.usePresentation === 1 ? true : false;
         if (result.showWidgets) this.showWidgets = result.showWidgets;
         if (result.showWidgets) this.showWidgets = result.showWidgets;

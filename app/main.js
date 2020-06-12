@@ -54,6 +54,9 @@ define(["require", "exports", "esri/views/SceneView", "esri/WebScene", "esri/Gra
                 this.searchWidget = new Search_1.default({
                     view: this.view
                 });
+                if (this.geocode) {
+                    this.searchWidget.search(this.geocode);
+                }
                 this.view.ui.add(this.searchWidget, {
                     position: "top-left",
                     index: 0
@@ -197,6 +200,8 @@ define(["require", "exports", "esri/views/SceneView", "esri/WebScene", "esri/Gra
                     result[item[0]] = decodeURIComponent(item[1]);
                 });
             });
+            if (result.geocode)
+                this.geocode = result.geocode;
             if (result.usePresentation)
                 this.usePresentation = result.usePresentation === "true" || result.usePresentation === "y" || result.usePresentation === 1 ? true : false;
             if (result.showWidgets)
