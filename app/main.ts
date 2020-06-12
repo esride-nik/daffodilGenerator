@@ -228,8 +228,6 @@ class DaffodilGen {
             }
         });
     }
-
 }
 
-
-
+let daffodilGen = new DaffodilGen();

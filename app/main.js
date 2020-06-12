@@ -209,5 +209,6 @@ define(["require", "exports", "esri/views/SceneView", "esri/WebScene", "esri/Gra
         };
         return DaffodilGen;
     }());
+    var daffodilGen = new DaffodilGen();
 });
 //# sourceMappingURL=main.js.map
