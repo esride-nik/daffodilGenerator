@@ -20,6 +20,9 @@ Supports the following URL parameters:
 * offset: number. default: 0. halt when slide is reached.
 * easing: string. default: "in-out-coast-quadratic". [possible values see "easing" doc](https://developers.arcgis.com/javascript/latest/api-reference/esri-views-SceneView.html#GoToOptions3D)
 
+Example call:
+* https://esride-nik.github.io/daffodilGenerator?modelLayerStartAt=4&speedFactor=0.4&startAt=3
+
 Disclaimer: Esri attribution and other widgets were removed by default, because this project was used to make videos for the Esri Germany conference #EsriKon 2020.
 
 Based the ArcGIS API for JavaScript Sample [Import glTF 3D Models - 4.14](https://developers.arcgis.com/javascript/latest/sample-code/import-gltf/index.html).

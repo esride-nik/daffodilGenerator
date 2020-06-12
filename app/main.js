@@ -20,6 +20,41 @@ define(["require", "exports", "esri/views/SceneView", "esri/WebScene", "esri/Gra
             this.zoomClose = false;
             this.easing = "in-out-coast-quadratic";
             this.getUrlParams();
+            this.createSceneAndView();
+            this.initPresentation();
+            this.modelLayer = new GraphicsLayer({
+                id: "modelLayer"
+            });
+            if ((this.modelLayerStartAt === -1 || this.modelLayerStartAt <= this.startAt) && !this.view.map.findLayerById(this.modelLayer.id)) {
+                this.view.map.add(this.modelLayer);
+            }
+            var daffodilAreas = new FeatureLayer({
+                url: this.daffodilAreasUrl,
+                id: "daffodilAreas"
+            });
+            if (this.showAreaLayer)
+                this.view.map.add(daffodilAreas);
+            // Queries for all the features in the service (not the graphics in the view)
+            daffodilAreas.queryFeatures().then(function (results) { return _this.handleDaffodils(results); });
+        }
+        DaffodilGen.prototype.initPresentation = function () {
+            var _this = this;
+            this.view.when(function () {
+                _this.createPresentation(_this.webScene.presentation.slides);
+                if (_this.zoomClose) {
+                    var c = _this.view.camera;
+                    c.position.z = 0.1;
+                    _this.view.goTo(c);
+                }
+                if (_this.cameraListener) {
+                    _this.view.watch("camera", function (c) {
+                        console.log(JSON.stringify(c));
+                    });
+                }
+            });
+        };
+        DaffodilGen.prototype.createSceneAndView = function () {
+            var _this = this;
             this.webScene = new WebScene({
                 portalItem: {
                     id: this.itemId
@@ -43,34 +78,7 @@ define(["require", "exports", "esri/views/SceneView", "esri/WebScene", "esri/Gra
                 this.view.ui.empty("top-left");
                 this.view.ui.remove("attribution");
             }
-            this.view.when(function () {
-                _this.createPresentation(_this.webScene.presentation.slides);
-                if (_this.zoomClose) {
-                    var c = _this.view.camera;
-                    c.position.z = 0.1;
-                    _this.view.goTo(c);
-                }
-                if (_this.cameraListener) {
-                    _this.view.watch("camera", function (c) {
-                        console.log(JSON.stringify(c));
-                    });
-                }
-            });
-            this.modelLayer = new GraphicsLayer({
-                id: "modelLayer"
-            });
-            if ((this.modelLayerStartAt === -1 || this.modelLayerStartAt <= this.startAt) && !this.view.map.findLayerById(this.modelLayer.id)) {
-                this.view.map.add(this.modelLayer);
-            }
-            var daffodilAreas = new FeatureLayer({
-                url: this.daffodilAreasUrl,
-                id: "daffodilAreas"
-            });
-            if (this.showAreaLayer)
-                this.view.map.add(daffodilAreas);
-            // Queries for all the features in the service (not the graphics in the view)
-            daffodilAreas.queryFeatures().then(function (results) { return _this.handleDaffodils(results); });
-        }
+        };
         DaffodilGen.prototype.handleDaffodils = function (results) {
             // prints an array of all the features in the service to the console
             console.log("daffodilAreas query", results.features);
@@ -121,7 +129,7 @@ define(["require", "exports", "esri/views/SceneView", "esri/WebScene", "esri/Gra
             console.log("total pointCounter", pointCounter);
         };
         DaffodilGen.prototype.getUrlParams = function () {
-            var queryParams = document.location.search.substr(1);
+            var queryParams = document.location.search;
             var result = {};
             queryParams.split("?").map(function (params) {
                 params.split("&").map(function (param) {
@@ -150,9 +158,9 @@ define(["require", "exports", "esri/views/SceneView", "esri/WebScene", "esri/Gra
             if (result.startAt)
                 this.startAt = result.startAt;
             if (result.modelLayerStartAt)
-                this.modelLayerStartAt = result.modelLayerStartAt;
+                this.modelLayerStartAt = parseInt(result.modelLayerStartAt);
             if (result.modelLayerEndAt)
-                this.modelLayerEndAt = result.modelLayerEndAt;
+                this.modelLayerEndAt = parseInt(result.modelLayerEndAt);
             if (result.speedFactor)
                 this.speedFactor = result.speedFactor;
             if (result.offset)
@@ -187,6 +195,9 @@ define(["require", "exports", "esri/views/SceneView", "esri/WebScene", "esri/Gra
         DaffodilGen.prototype.aniNextLocation = function (slides) {
             var _this = this;
             console.log("Approaching location #" + this.aniSlideCounter, slides[this.aniSlideCounter], slides[this.aniSlideCounter].viewpoint);
+            if (!(this.modelLayerStartAt === -1) && this.modelLayerStartAt === this.aniSlideCounter && !this.view.map.findLayerById(this.modelLayer.id)) {
+                this.view.map.add(this.modelLayer);
+            }
             new Promise(function (resolve) {
                 setTimeout(resolve, _this.offset);
             }).then(function () {

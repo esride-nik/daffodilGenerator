@@ -33,50 +33,9 @@ class DaffodilGen {
 
     constructor() {
         this.getUrlParams();
+        this.createSceneAndView();
 
-        this.webScene = new WebScene({
-            portalItem: {
-                id: this.itemId
-            }
-        });
-
-        this.webScene.load().then((w: any) => {
-            console.log("webScene loaded", w);
-            this.webScene.basemap.loadAll()
-                .catch((error) => {
-                    console.error("Basemap resource load error", error);
-                })
-                .then((l) => {
-                    console.log("All loaded", l);
-                });
-        });
-
-        this.view = new SceneView({
-            container: "viewDiv",
-            map: this.webScene
-        });
-
-        if (!this.showWidgets) {
-            this.view.ui.empty("top-left");
-            this.view.ui.remove("attribution");
-        }
-
-        this.view.when(() => {
-
-            this.createPresentation(this.webScene.presentation.slides);
-
-            if (this.zoomClose) {
-                let c = this.view.camera;
-                c.position.z = 0.1;
-                this.view.goTo(c);
-            }
-
-            if (this.cameraListener) {
-                this.view.watch("camera", (c) => {
-                    console.log(JSON.stringify(c));
-                })
-            }
-        });
+        this.initPresentation();
 
         this.modelLayer = new GraphicsLayer({
             id: "modelLayer"
@@ -92,10 +51,50 @@ class DaffodilGen {
         })
         if (this.showAreaLayer) this.view.map.add(daffodilAreas);
 
-
-
         // Queries for all the features in the service (not the graphics in the view)
         daffodilAreas.queryFeatures().then((results: any) => this.handleDaffodils(results));
+    }
+
+    private initPresentation() {
+        this.view.when(() => {
+            this.createPresentation(this.webScene.presentation.slides);
+            if (this.zoomClose) {
+                let c = this.view.camera;
+                c.position.z = 0.1;
+                this.view.goTo(c);
+            }
+            if (this.cameraListener) {
+                this.view.watch("camera", (c) => {
+                    console.log(JSON.stringify(c));
+                });
+            }
+        });
+    }
+
+    private createSceneAndView() {
+        this.webScene = new WebScene({
+            portalItem: {
+                id: this.itemId
+            }
+        });
+        this.webScene.load().then((w: any) => {
+            console.log("webScene loaded", w);
+            this.webScene.basemap.loadAll()
+                .catch((error) => {
+                    console.error("Basemap resource load error", error);
+                })
+                .then((l) => {
+                    console.log("All loaded", l);
+                });
+        });
+        this.view = new SceneView({
+            container: "viewDiv",
+            map: this.webScene
+        });
+        if (!this.showWidgets) {
+            this.view.ui.empty("top-left");
+            this.view.ui.remove("attribution");
+        }
     }
 
     private handleDaffodils(results: any) {
@@ -152,7 +151,7 @@ class DaffodilGen {
     }
 
     private getUrlParams() {
-        const queryParams = document.location.search.substr(1);
+        let queryParams = document.location.search;
         let result: any = {};
 
         queryParams.split("?").map((params) => {
@@ -172,8 +171,8 @@ class DaffodilGen {
         if (result.cameraListener) this.cameraListener = result.cameraListener;
         if (result.zoomClose) this.zoomClose = result.zoomClose;
         if (result.startAt) this.startAt = result.startAt;
-        if (result.modelLayerStartAt) this.modelLayerStartAt = result.modelLayerStartAt;
-        if (result.modelLayerEndAt) this.modelLayerEndAt = result.modelLayerEndAt;
+        if (result.modelLayerStartAt) this.modelLayerStartAt = parseInt(result.modelLayerStartAt);
+        if (result.modelLayerEndAt) this.modelLayerEndAt = parseInt(result.modelLayerEndAt);
         if (result.speedFactor) this.speedFactor = result.speedFactor;
         if (result.offset) this.offset = result.offset;
         if (result.easing) this.easing = result.easing;
@@ -206,6 +205,9 @@ class DaffodilGen {
 
     private aniNextLocation(slides: any) {
         console.log("Approaching location #" + this.aniSlideCounter, slides[this.aniSlideCounter], slides[this.aniSlideCounter].viewpoint);
+        if (!(this.modelLayerStartAt===-1) && this.modelLayerStartAt===this.aniSlideCounter && !this.view.map.findLayerById(this.modelLayer.id)) {
+            this.view.map.add(this.modelLayer);
+        }
         new Promise((resolve: any) => {
             setTimeout(resolve, this.offset);
         }).then(() => {
