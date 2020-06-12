@@ -69,7 +69,8 @@ define(["require", "exports", "esri/views/SceneView", "esri/WebScene", "esri/Gra
                 this.view.map.add(sketchLayer_1);
                 this.sketch = new Sketch_1.default({
                     layer: sketchLayer_1,
-                    view: this.view
+                    view: this.view,
+                    availableCreateTools: ["polygon", "rectangle", "circle"]
                 });
                 this.view.ui.add(this.sketch, {
                     position: "top-right",
@@ -188,21 +189,12 @@ define(["require", "exports", "esri/views/SceneView", "esri/WebScene", "esri/Gra
             }
             if (!this.usePresentation) {
                 this.view.when().then(function (e) {
-                    // let cam = this.view.camera;
-                    // cam.position.x = 775332.0137992485;
-                    // cam.position.y = 6612214.632348182;
-                    // cam.position.z = 57.69778415095061;
-                    // cam.heading = 207.988007136939;
-                    // cam.tilt = 82.21180084335059;
                     var cam = { "position": { "spatialReference": { "latestWkid": 3857, "wkid": 102100 }, "x": 775403.8146573873, "y": 6612168.1981127085, "z": 57.69778415095061 }, "heading": 207.9885080296481, "tilt": 82.21180084335448 };
                     _this.view.goTo(cam, {
                         animate: false
                     });
                 });
             }
-            // this.view.watch("extent", (e: any) => {
-            //     console.log(this.view.camera.position.x, this.view.camera.position.y, this.view.camera.position.z, JSON.stringify(this.view.camera));
-            // })
         };
         DaffodilGen.prototype.getUrlParams = function () {
             var queryParams = document.location.search;

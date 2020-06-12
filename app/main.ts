@@ -65,38 +65,39 @@ class DaffodilGen {
         else {
             this.searchWidget = new Search({
                 view: this.view
-              });
-              if (this.geocode) {
-                  this.searchWidget.search(this.geocode);
-                  this.searchWidget.goToOverride = (view: SceneView, goToParams: any) => {
+            });
+            if (this.geocode) {
+                this.searchWidget.search(this.geocode);
+                this.searchWidget.goToOverride = (view: SceneView, goToParams: any) => {
                     goToParams.options.animate = false;
                     return view.goTo(goToParams.target, goToParams.options);
-                  };
-              }
-              this.view.ui.add(this.searchWidget, {
+                };
+            }
+            this.view.ui.add(this.searchWidget, {
                 position: "top-left",
                 index: 0
-              });
+            });
 
-              let sketchLayer = new GraphicsLayer();
-              this.view.map.add(sketchLayer);
+            let sketchLayer = new GraphicsLayer();
+            this.view.map.add(sketchLayer);
 
-              this.sketch = new Sketch({
+            this.sketch = new Sketch({
                 layer: sketchLayer,
-                view: this.view
-              });
-              this.view.ui.add(this.sketch, {
+                view: this.view,
+                availableCreateTools: ["polygon", "rectangle", "circle"]
+            });
+            this.view.ui.add(this.sketch, {
                 position: "top-right",
                 index: 0
-              });
-              
-              this.sketch.on("create", (event: any) => {
+            });
+
+            this.sketch.on("create", (event: any) => {
                 if (event.state === "complete") {
                     this.drawDaffodilsIntoArea(event.graphic.geometry);
                     this.view.goTo(event.graphic.geometry);
                     sketchLayer.remove(event.graphic);
                 }
-              });
+            });
         }
     }
 
@@ -166,7 +167,7 @@ class DaffodilGen {
             rowCounter++;
             console.log("row ", rowCounter, " pointCounter", pointCounter);
         }
-        console.log("total pointCounter", pointCounter, "assumed: ", assumePointCount, "ratio assumed/real: ", assumePointCount/pointCounter);
+        console.log("total pointCounter", pointCounter, "assumed: ", assumePointCount, "ratio assumed/real: ", assumePointCount / pointCounter);
     }
 
     private initPresentation() {
@@ -211,22 +212,12 @@ class DaffodilGen {
         }
         if (!this.usePresentation) {
             this.view.when().then((e: any) => {
-                // let cam = this.view.camera;
-                // cam.position.x = 775332.0137992485;
-                // cam.position.y = 6612214.632348182;
-                // cam.position.z = 57.69778415095061;
-                // cam.heading = 207.988007136939;
-                // cam.tilt = 82.21180084335059;
-                let cam = {"position":{"spatialReference":{"latestWkid":3857,"wkid":102100},"x":775403.8146573873,"y":6612168.1981127085,"z":57.69778415095061},"heading":207.9885080296481,"tilt":82.21180084335448};
+                let cam = { "position": { "spatialReference": { "latestWkid": 3857, "wkid": 102100 }, "x": 775403.8146573873, "y": 6612168.1981127085, "z": 57.69778415095061 }, "heading": 207.9885080296481, "tilt": 82.21180084335448 };
                 this.view.goTo(cam, {
                     animate: false
                 });
             });
         }
-
-        // this.view.watch("extent", (e: any) => {
-        //     console.log(this.view.camera.position.x, this.view.camera.position.y, this.view.camera.position.z, JSON.stringify(this.view.camera));
-        // })
     }
 
     private getUrlParams() {
