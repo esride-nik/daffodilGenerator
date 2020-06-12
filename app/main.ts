@@ -29,13 +29,16 @@ class DaffodilGen {
     private modelLayer: GraphicsLayer;
     private aniSlideCounter: number;
     private webScene: WebScene;
+    private usePresentation: boolean;
 
 
     constructor() {
         this.getUrlParams();
         this.createSceneAndView();
 
-        this.initPresentation();
+        if (this.usePresentation) {
+            this.initPresentation();
+        }
 
         this.modelLayer = new GraphicsLayer({
             id: "modelLayer"
@@ -45,14 +48,16 @@ class DaffodilGen {
             this.view.map.add(this.modelLayer);
         }
 
-        let daffodilAreas = new FeatureLayer({
-            url: this.daffodilAreasUrl,
-            id: "daffodilAreas"
-        })
-        if (this.showAreaLayer) this.view.map.add(daffodilAreas);
+        if (this.usePresentation) {
+            let daffodilAreas = new FeatureLayer({
+                url: this.daffodilAreasUrl,
+                id: "daffodilAreas"
+            })
+            if (this.showAreaLayer) this.view.map.add(daffodilAreas);
 
-        // Queries for all the features in the service (not the graphics in the view)
-        daffodilAreas.queryFeatures().then((results: any) => this.handleDaffodils(results));
+            // Queries for all the features in the service (not the graphics in the view)
+            daffodilAreas.queryFeatures().then((results: any) => this.handleDaffodils(results));
+        }
     }
 
     private initPresentation() {
@@ -161,6 +166,8 @@ class DaffodilGen {
             })
         });
 
+        if (result.usePresentation) this.usePresentation = result.usePresentation === "true" || result.usePresentation === "y" || result.usePresentation === 1 ? true : false;
+        if (result.showWidgets) this.showWidgets = result.showWidgets;
         if (result.showWidgets) this.showWidgets = result.showWidgets;
         if (result.showAreaLayer) this.showAreaLayer = result.showAreaLayer;
         if (result.itemId) this.itemId = result.itemId;
@@ -205,7 +212,7 @@ class DaffodilGen {
 
     private aniNextLocation(slides: any) {
         console.log("Approaching location #" + this.aniSlideCounter, slides[this.aniSlideCounter], slides[this.aniSlideCounter].viewpoint);
-        if (!(this.modelLayerStartAt===-1) && this.modelLayerStartAt===this.aniSlideCounter && !this.view.map.findLayerById(this.modelLayer.id)) {
+        if (!(this.modelLayerStartAt === -1) && this.modelLayerStartAt === this.aniSlideCounter && !this.view.map.findLayerById(this.modelLayer.id)) {
             this.view.map.add(this.modelLayer);
         }
         new Promise((resolve: any) => {

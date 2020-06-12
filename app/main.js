@@ -21,21 +21,25 @@ define(["require", "exports", "esri/views/SceneView", "esri/WebScene", "esri/Gra
             this.easing = "in-out-coast-quadratic";
             this.getUrlParams();
             this.createSceneAndView();
-            this.initPresentation();
+            if (this.usePresentation) {
+                this.initPresentation();
+            }
             this.modelLayer = new GraphicsLayer({
                 id: "modelLayer"
             });
             if ((this.modelLayerStartAt === -1 || this.modelLayerStartAt <= this.startAt) && !this.view.map.findLayerById(this.modelLayer.id)) {
                 this.view.map.add(this.modelLayer);
             }
-            var daffodilAreas = new FeatureLayer({
-                url: this.daffodilAreasUrl,
-                id: "daffodilAreas"
-            });
-            if (this.showAreaLayer)
-                this.view.map.add(daffodilAreas);
-            // Queries for all the features in the service (not the graphics in the view)
-            daffodilAreas.queryFeatures().then(function (results) { return _this.handleDaffodils(results); });
+            if (this.usePresentation) {
+                var daffodilAreas = new FeatureLayer({
+                    url: this.daffodilAreasUrl,
+                    id: "daffodilAreas"
+                });
+                if (this.showAreaLayer)
+                    this.view.map.add(daffodilAreas);
+                // Queries for all the features in the service (not the graphics in the view)
+                daffodilAreas.queryFeatures().then(function (results) { return _this.handleDaffodils(results); });
+            }
         }
         DaffodilGen.prototype.initPresentation = function () {
             var _this = this;
@@ -137,6 +141,10 @@ define(["require", "exports", "esri/views/SceneView", "esri/WebScene", "esri/Gra
                     result[item[0]] = decodeURIComponent(item[1]);
                 });
             });
+            if (result.usePresentation)
+                this.usePresentation = result.usePresentation === "true" || result.usePresentation === "y" || result.usePresentation === 1 ? true : false;
+            if (result.showWidgets)
+                this.showWidgets = result.showWidgets;
             if (result.showWidgets)
                 this.showWidgets = result.showWidgets;
             if (result.showAreaLayer)

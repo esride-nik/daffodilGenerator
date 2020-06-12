@@ -21,7 +21,7 @@ Supports the following URL parameters:
 * easing: string. default: "in-out-coast-quadratic". [possible values see "easing" doc](https://developers.arcgis.com/javascript/latest/api-reference/esri-views-SceneView.html#GoToOptions3D)
 
 Example call:
-* https://esride-nik.github.io/daffodilGenerator?modelLayerStartAt=4&speedFactor=0.4&startAt=3
+* Using presentation and fixed daffodil area from FeatureLayer: https://esride-nik.github.io/daffodilGenerator?usePresentation=true&modelLayerStartAt=4&speedFactor=0.4&startAt=3
 
 Disclaimer: Esri attribution and other widgets were removed by default, because this project was used to make videos for the Esri Germany conference #EsriKon 2020.
 
