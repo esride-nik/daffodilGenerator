@@ -1,6 +1,18 @@
-define(["require", "exports", "esri/views/SceneView", "esri/WebScene", "esri/Graphic", "esri/layers/GraphicsLayer", "esri/layers/FeatureLayer", "esri/geometry/Point", "esri/geometry/geometryEngine"], function (require, exports, SceneView, WebScene, Graphic, GraphicsLayer, FeatureLayer, Point, geometryEngine) {
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+define(["require", "exports", "esri/views/SceneView", "esri/WebScene", "esri/Graphic", "esri/layers/GraphicsLayer", "esri/layers/FeatureLayer", "esri/geometry/Point", "esri/geometry/geometryEngine", "esri/widgets/Search", "esri/widgets/Sketch"], function (require, exports, SceneView_1, WebScene_1, Graphic_1, GraphicsLayer_1, FeatureLayer_1, Point_1, geometryEngine_1, Search_1, Sketch_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    SceneView_1 = __importDefault(SceneView_1);
+    WebScene_1 = __importDefault(WebScene_1);
+    Graphic_1 = __importDefault(Graphic_1);
+    GraphicsLayer_1 = __importDefault(GraphicsLayer_1);
+    FeatureLayer_1 = __importDefault(FeatureLayer_1);
+    Point_1 = __importDefault(Point_1);
+    geometryEngine_1 = __importDefault(geometryEngine_1);
+    Search_1 = __importDefault(Search_1);
+    Sketch_1 = __importDefault(Sketch_1);
     var DaffodilGen = /** @class */ (function () {
         function DaffodilGen() {
             var _this = this;
@@ -21,17 +33,15 @@ define(["require", "exports", "esri/views/SceneView", "esri/WebScene", "esri/Gra
             this.easing = "in-out-coast-quadratic";
             this.getUrlParams();
             this.createSceneAndView();
-            if (this.usePresentation) {
-                this.initPresentation();
-            }
-            this.modelLayer = new GraphicsLayer({
+            this.modelLayer = new GraphicsLayer_1.default({
                 id: "modelLayer"
             });
             if ((this.modelLayerStartAt === -1 || this.modelLayerStartAt <= this.startAt) && !this.view.map.findLayerById(this.modelLayer.id)) {
                 this.view.map.add(this.modelLayer);
             }
             if (this.usePresentation) {
-                var daffodilAreas = new FeatureLayer({
+                this.initPresentation();
+                var daffodilAreas = new FeatureLayer_1.default({
                     url: this.daffodilAreasUrl,
                     id: "daffodilAreas"
                 });
@@ -40,55 +50,41 @@ define(["require", "exports", "esri/views/SceneView", "esri/WebScene", "esri/Gra
                 // Queries for all the features in the service (not the graphics in the view)
                 daffodilAreas.queryFeatures().then(function (results) { return _this.handleDaffodils(results); });
             }
-        }
-        DaffodilGen.prototype.initPresentation = function () {
-            var _this = this;
-            this.view.when(function () {
-                _this.createPresentation(_this.webScene.presentation.slides);
-                if (_this.zoomClose) {
-                    var c = _this.view.camera;
-                    c.position.z = 0.1;
-                    _this.view.goTo(c);
-                }
-                if (_this.cameraListener) {
-                    _this.view.watch("camera", function (c) {
-                        console.log(JSON.stringify(c));
-                    });
-                }
-            });
-        };
-        DaffodilGen.prototype.createSceneAndView = function () {
-            var _this = this;
-            this.webScene = new WebScene({
-                portalItem: {
-                    id: this.itemId
-                }
-            });
-            this.webScene.load().then(function (w) {
-                console.log("webScene loaded", w);
-                _this.webScene.basemap.loadAll()
-                    .catch(function (error) {
-                    console.error("Basemap resource load error", error);
-                })
-                    .then(function (l) {
-                    console.log("All loaded", l);
+            else {
+                this.searchWidget = new Search_1.default({
+                    view: this.view
                 });
-            });
-            this.view = new SceneView({
-                container: "viewDiv",
-                map: this.webScene
-            });
-            if (!this.showWidgets) {
-                this.view.ui.empty("top-left");
-                this.view.ui.remove("attribution");
+                this.view.ui.add(this.searchWidget, {
+                    position: "top-left",
+                    index: 0
+                });
+                var sketchLayer_1 = new GraphicsLayer_1.default();
+                this.view.map.add(sketchLayer_1);
+                this.sketch = new Sketch_1.default({
+                    layer: sketchLayer_1,
+                    view: this.view
+                });
+                this.view.ui.add(this.sketch, {
+                    position: "top-right",
+                    index: 0
+                });
+                this.sketch.on("create", function (event) {
+                    if (event.state === "complete") {
+                        _this.drawDaffodilsIntoArea(event.graphic.geometry);
+                        sketchLayer_1.remove(event.graphic);
+                    }
+                });
             }
-        };
+        }
         DaffodilGen.prototype.handleDaffodils = function (results) {
             // prints an array of all the features in the service to the console
             console.log("daffodilAreas query", results.features);
             var allGeo = results.features.map(function (feature) { return feature.geometry; });
-            var unGeo = geometryEngine.union(allGeo);
+            var unGeo = geometryEngine_1.default.union(allGeo);
             console.log("result geo", allGeo, unGeo);
+            this.drawDaffodilsIntoArea(unGeo);
+        };
+        DaffodilGen.prototype.drawDaffodilsIntoArea = function (unGeo) {
             var ext = unGeo.extent;
             var xDist = this.maxDist * this.getRndPercent();
             var yDist = this.maxDist * this.getRndPercent();
@@ -96,15 +92,15 @@ define(["require", "exports", "esri/views/SceneView", "esri/WebScene", "esri/Gra
             var rowCounter = 0;
             for (var x = ext.xmin; x < ext.xmax; x += xDist) {
                 for (var y = ext.ymin; y < ext.ymax; y += yDist) {
-                    var point = new Point({
+                    var point = new Point_1.default({
                         y: y,
                         x: x,
                         spatialReference: unGeo.spatialReference
                     });
-                    if (geometryEngine.contains(unGeo, point)) {
+                    if (geometryEngine_1.default.contains(unGeo, point)) {
                         var heading = Math.random() * 360;
                         var height = this.maxHeight * this.getRndPercent(50, 100);
-                        var graphic = new Graphic({
+                        var graphic = new Graphic_1.default({
                             geometry: point,
                             symbol: {
                                 type: "point-3d",
@@ -131,6 +127,61 @@ define(["require", "exports", "esri/views/SceneView", "esri/WebScene", "esri/Gra
                 console.log("row ", rowCounter, " pointCounter", pointCounter);
             }
             console.log("total pointCounter", pointCounter);
+        };
+        DaffodilGen.prototype.initPresentation = function () {
+            var _this = this;
+            this.view.when(function () {
+                _this.createPresentation(_this.webScene.presentation.slides);
+                if (_this.zoomClose) {
+                    var c = _this.view.camera;
+                    c.position.z = 0.1;
+                    _this.view.goTo(c);
+                }
+                if (_this.cameraListener) {
+                    _this.view.watch("camera", function (c) {
+                        console.log(JSON.stringify(c));
+                    });
+                }
+            });
+        };
+        DaffodilGen.prototype.createSceneAndView = function () {
+            var _this = this;
+            this.webScene = new WebScene_1.default({
+                portalItem: {
+                    id: this.itemId
+                }
+            });
+            this.webScene.load().then(function (w) {
+                console.log("webScene loaded", w);
+                _this.webScene.basemap.loadAll()
+                    .catch(function (error) {
+                    console.error("Basemap resource load error", error);
+                })
+                    .then(function (l) {
+                    console.log("All loaded", l);
+                });
+            });
+            this.view = new SceneView_1.default({
+                container: "viewDiv",
+                map: this.webScene
+            });
+            if (!this.showWidgets && this.usePresentation) {
+                this.view.ui.empty("top-left");
+                this.view.ui.remove("attribution");
+            }
+            if (!this.usePresentation) {
+                this.view.when().then(function (e) {
+                    var cam = _this.view.camera;
+                    cam.position.x = 775332.0137992485;
+                    cam.position.y = 6612214.632348182;
+                    cam.position.z = 57.69778415095061;
+                    cam.heading = 207.988007136939;
+                    cam.tilt = 82.21180084335059;
+                    _this.view.goTo(cam, {
+                        animate: false
+                    });
+                });
+            }
         };
         DaffodilGen.prototype.getUrlParams = function () {
             var queryParams = document.location.search;

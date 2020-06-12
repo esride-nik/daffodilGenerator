@@ -1,12 +1,15 @@
 
-import SceneView = require("esri/views/SceneView");
-import WebScene = require("esri/WebScene");
-import Graphic = require("esri/Graphic");
-import GraphicsLayer = require("esri/layers/GraphicsLayer");
-import FeatureLayer = require("esri/layers/FeatureLayer");
-import Point = require("esri/geometry/Point");
-import geometryEngine = require("esri/geometry/geometryEngine");
-import PointSymbol3D = require("esri/symbols/PointSymbol3D");
+import SceneView from "esri/views/SceneView";
+import WebScene from "esri/WebScene";
+import Graphic from "esri/Graphic";
+import GraphicsLayer from "esri/layers/GraphicsLayer";
+import FeatureLayer from "esri/layers/FeatureLayer";
+import Point from "esri/geometry/Point";
+import geometryEngine from "esri/geometry/geometryEngine";
+import PointSymbol3D from "esri/symbols/PointSymbol3D";
+import Search from "esri/widgets/Search";
+import Sketch from "esri/widgets/Sketch";
+import Geometry from "esri/geometry/Geometry";
 
 class DaffodilGen {
 
@@ -30,15 +33,13 @@ class DaffodilGen {
     private aniSlideCounter: number;
     private webScene: WebScene;
     private usePresentation: boolean;
+    searchWidget: Search;
+    sketch: any;
 
 
     constructor() {
         this.getUrlParams();
         this.createSceneAndView();
-
-        if (this.usePresentation) {
-            this.initPresentation();
-        }
 
         this.modelLayer = new GraphicsLayer({
             id: "modelLayer"
@@ -49,6 +50,8 @@ class DaffodilGen {
         }
 
         if (this.usePresentation) {
+            this.initPresentation();
+
             let daffodilAreas = new FeatureLayer({
                 url: this.daffodilAreasUrl,
                 id: "daffodilAreas"
@@ -58,47 +61,33 @@ class DaffodilGen {
             // Queries for all the features in the service (not the graphics in the view)
             daffodilAreas.queryFeatures().then((results: any) => this.handleDaffodils(results));
         }
-    }
+        else {
+            this.searchWidget = new Search({
+                view: this.view
+              });
+              this.view.ui.add(this.searchWidget, {
+                position: "top-left",
+                index: 0
+              });
 
-    private initPresentation() {
-        this.view.when(() => {
-            this.createPresentation(this.webScene.presentation.slides);
-            if (this.zoomClose) {
-                let c = this.view.camera;
-                c.position.z = 0.1;
-                this.view.goTo(c);
-            }
-            if (this.cameraListener) {
-                this.view.watch("camera", (c) => {
-                    console.log(JSON.stringify(c));
-                });
-            }
-        });
-    }
+              let sketchLayer = new GraphicsLayer();
+              this.view.map.add(sketchLayer);
 
-    private createSceneAndView() {
-        this.webScene = new WebScene({
-            portalItem: {
-                id: this.itemId
-            }
-        });
-        this.webScene.load().then((w: any) => {
-            console.log("webScene loaded", w);
-            this.webScene.basemap.loadAll()
-                .catch((error) => {
-                    console.error("Basemap resource load error", error);
-                })
-                .then((l) => {
-                    console.log("All loaded", l);
-                });
-        });
-        this.view = new SceneView({
-            container: "viewDiv",
-            map: this.webScene
-        });
-        if (!this.showWidgets) {
-            this.view.ui.empty("top-left");
-            this.view.ui.remove("attribution");
+              this.sketch = new Sketch({
+                layer: sketchLayer,
+                view: this.view
+              });
+              this.view.ui.add(this.sketch, {
+                position: "top-right",
+                index: 0
+              });
+              
+              this.sketch.on("create", (event: any) => {
+                if (event.state === "complete") {
+                    this.drawDaffodilsIntoArea(event.graphic.geometry);
+                    sketchLayer.remove(event.graphic);
+                }
+              });
         }
     }
 
@@ -111,6 +100,11 @@ class DaffodilGen {
 
         console.log("result geo", allGeo, unGeo);
 
+        this.drawDaffodilsIntoArea(unGeo);
+    }
+
+
+    private drawDaffodilsIntoArea(unGeo: Geometry) {
         let ext = unGeo.extent;
         let xDist = this.maxDist * this.getRndPercent();
         let yDist = this.maxDist * this.getRndPercent();
@@ -153,6 +147,61 @@ class DaffodilGen {
             console.log("row ", rowCounter, " pointCounter", pointCounter);
         }
         console.log("total pointCounter", pointCounter);
+    }
+
+    private initPresentation() {
+        this.view.when(() => {
+            this.createPresentation(this.webScene.presentation.slides);
+            if (this.zoomClose) {
+                let c = this.view.camera;
+                c.position.z = 0.1;
+                this.view.goTo(c);
+            }
+            if (this.cameraListener) {
+                this.view.watch("camera", (c) => {
+                    console.log(JSON.stringify(c));
+                });
+            }
+        });
+    }
+
+    private createSceneAndView() {
+        this.webScene = new WebScene({
+            portalItem: {
+                id: this.itemId
+            }
+        });
+        this.webScene.load().then((w: any) => {
+            console.log("webScene loaded", w);
+            this.webScene.basemap.loadAll()
+                .catch((error) => {
+                    console.error("Basemap resource load error", error);
+                })
+                .then((l) => {
+                    console.log("All loaded", l);
+                });
+        });
+        this.view = new SceneView({
+            container: "viewDiv",
+            map: this.webScene
+        });
+        if (!this.showWidgets && this.usePresentation) {
+            this.view.ui.empty("top-left");
+            this.view.ui.remove("attribution");
+        }
+        if (!this.usePresentation) {
+            this.view.when().then((e: any) => {
+                let cam = this.view.camera;
+                cam.position.x = 775332.0137992485;
+                cam.position.y = 6612214.632348182;
+                cam.position.z = 57.69778415095061;
+                cam.heading = 207.988007136939;
+                cam.tilt = 82.21180084335059;
+                this.view.goTo(cam, {
+                    animate: false
+                });
+            });
+        }
     }
 
     private getUrlParams() {
